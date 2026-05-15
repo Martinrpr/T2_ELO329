@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarea 2 – Documentación Etapa 4</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1100px; margin: 40px auto; padding: 0 20px; color: #222; }
+    h1 { color: #1a3a6b; border-bottom: 2px solid #1a3a6b; padding-bottom: 8px; }
+    h2 { color: #2c5f9e; margin-top: 36px; }
+    h3 { color: #444; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th { background: #1a3a6b; color: white; padding: 8px 12px; text-align: left; }
+    td { border: 1px solid #ccc; padding: 8px 12px; vertical-align: top; }
+    tr:nth-child(even) { background: #f4f7fc; }
+    code { background: #eef; padding: 2px 6px; border-radius: 3px; font-size: 0.92em; }
+    .mermaid { background: #fafbff; border: 1px solid #dde; padding: 20px; border-radius: 8px; overflow-x: auto; }
+    .badge { display: inline-block; background: #2c5f9e; color: white; border-radius: 4px; padding: 2px 8px; font-size: 0.82em; margin-left: 6px; }
+    .note { background: #fffbe6; border-left: 4px solid #f0b429; padding: 10px 16px; margin: 12px 0; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<h1>Tarea 2 – Simulador Gráfico EloTelTag <span class="badge">Etapa 4 (Final)</span></h1>
+<p><strong>Ramo:</strong> ELO329 – Diseño y Programación Orientados a Objetos &nbsp;|&nbsp; <strong>Semestre:</strong> 1er semestre 2026</p>
+<p><strong>Integrantes:</strong> Carlos Ramírez, Nicolás (nicor)</p>
+
+<h2>1. Diagrama de Clases</h2>
+<div class="mermaid">
+classDiagram
+    class Equipo {
+        #String ownerName
+        #DoubleProperty x
+        #DoubleProperty y
+        -double r
+        -double theta
+        -double dtheta
+        +Equipo(owner, x, y, r, theta, dtheta)
+        +move(dt) void
+        +xProperty() DoubleProperty
+        +yProperty() DoubleProperty
+        +getX() double
+        +getY() double
+        +getOwnerName() String
+    }
+
+    class Cellular {
+        -ETNube nube
+        +Cellular(owner, x, y, r, theta, dtheta, nube)
+        +reportLocation() void
+        +reportTagLocation(tag) void
+    }
+
+    class EloTelTag {
+        -String name
+        +DETECTION_RANGE double
+        +EloTelTag(owner, name, x, y, r, theta, dtheta)
+        +isWithinRange(cell) boolean
+        +getName() String
+    }
+
+    class Tablet {
+        +Tablet(owner, x, y, r, theta, dtheta)
+    }
+
+    class Territory {
+        -ArrayList~Equipo~ equipment
+        +addEquipment(e) void
+        +getCellulars() List~Cellular~
+        +moveAll(dt) void
+        +reportTagLocations() void
+        +reportTabletLocations() void
+        -findNearbyCellular(tag) Cellular
+    }
+
+    class ETNube {
+        -List~Data~ cloudData
+        +updateLocation(owner, device, x, y) void
+        +getOwnerRecords(owner) List~DeviceRecord~
+    }
+
+    class TerritoryView {
+        -Pane pane
+        +WIDTH double$
+        +HEIGHT double$
+        +TerritoryView(territory, imageName)
+        +add(node) void
+        +getPaneForRadar() Pane
+        +getTagViews() List~EloTelTagView~
+        +getTabletViews() List~TabletView~
+    }
+
+    class CellularView {
+        +CellularView(cellular, nube)
+    }
+
+    class EloTelTagView {
+        -EloTelTag tag
+        -Pane parentPane
+        +EloTelTagView(tag, nube)
+        +showRadar() void
+        +setParentPane(pane) void
+        +getTag() EloTelTag
+    }
+
+    class TabletView {
+        -Tablet tablet
+        -Pane parentPane
+        +TabletView(tablet, nube)
+        +showRadar() void
+        +setParentPane(pane) void
+        +getTablet() Tablet
+    }
+
+    class FindMyWindow {
+        -String ownerName
+        -ETNube nube
+        -Timeline updateTimer
+        +FindMyWindow(ownerName, nube)
+        -refreshContent() void
+        -startAutoUpdate() void
+    }
+
+    class SoundPlayer {
+        +playBeep()$ void
+    }
+
+    class Stage4 {
+        -Territory territory
+        -TerritoryView territoryView
+        -ETNube nube
+        -Timeline animationLoop
+        -Timeline cellularReporter
+        -Timeline tagRadar
+        -Timeline tabletRadar
+        -double timeStep
+        +start(primaryStage) void
+    }
+
+    Equipo <|-- Cellular
+    Equipo <|-- EloTelTag
+    EloTelTag <|-- Tablet
+
+    Stage4 --> Territory : controla
+    Stage4 --> TerritoryView : muestra
+    Stage4 --> ETNube : usa
+    Territory o-- Equipo : contiene
+    Cellular --> ETNube : reporta
+    TerritoryView --> CellularView
+    TerritoryView --> EloTelTagView
+    TerritoryView --> TabletView
+    CellularView ..> FindMyWindow : abre
+    EloTelTagView ..> FindMyWindow : abre
+    EloTelTagView ..> SoundPlayer : llama
+    TabletView ..> FindMyWindow : abre
+    TabletView ..> SoundPlayer : llama
+    FindMyWindow --> ETNube : consulta
+</div>
+
+<h2>2. Arquitectura MVC</h2>
+<p>El proyecto sigue el patrón <strong>Modelo–Vista–Controlador</strong>:</p>
+<table>
+  <tr><th>Capa</th><th>Clases</th><th>Responsabilidad</th></tr>
+  <tr>
+    <td><strong>Modelo</strong></td>
+    <td><code>Equipo</code>, <code>Cellular</code>, <code>EloTelTag</code>, <code>Tablet</code>, <code>ETNube</code>, <code>Territory</code></td>
+    <td>Almacenan datos y lógica de negocio. La posición se guarda en <code>DoubleProperty</code> para permitir enlace automático con las vistas.</td>
+  </tr>
+  <tr>
+    <td><strong>Vista</strong></td>
+    <td><code>CellularView</code>, <code>EloTelTagView</code>, <code>TabletView</code>, <code>TerritoryView</code>, <code>FindMyWindow</code></td>
+    <td>Renderizan cada dispositivo usando nodos JavaFX. Se actualizan automáticamente mediante <code>bind()</code> sin necesidad de llamadas manuales.</td>
+  </tr>
+  <tr>
+    <td><strong>Controlador</strong></td>
+    <td><code>Stage4</code>, <code>Territory.moveAll()</code></td>
+    <td>Reacciona a eventos (Play/Pause, clic en dispositivo) y coordina timelines de animación.</td>
+  </tr>
+</table>
+
+<h2>3. Descripción de Clases</h2>
+
+<h3>Equipo</h3>
+<p>Clase base para todos los dispositivos. Usa <code>DoubleProperty</code> de JavaFX para la posición, lo que permite enlace automático con las vistas. El movimiento sigue un modelo <strong>polar</strong>: en cada paso de tiempo el ángulo varía aleatoriamente en ±<em>dtheta</em> y la posición avanza <em>r·dt</em> píxeles. Rebote elástico al alcanzar los bordes.</p>
+
+<h3>Cellular</h3>
+<p>Extiende <code>Equipo</code>. Mantiene referencia a <code>ETNube</code>. Reporta su propia posición cada 4 segundos (<code>reportLocation()</code>) y la posición aproximada de tags/tablets cercanos (<code>reportTagLocation(tag)</code>).</p>
+
+<h3>EloTelTag</h3>
+<p>Extiende <code>Equipo</code>. Añade un nombre propio (p.ej. "maleta"). Detecta celulares en un radio de 50 px (<code>isWithinRange()</code>). Busca celulares cada 4 segundos.</p>
+
+<h3>Tablet</h3>
+<p>Extiende <code>EloTelTag</code> con nombre fijo "tablet". Busca celulares cada 5 segundos. Se hereda todo el comportamiento de rastreo.</p>
+
+<h3>Territory</h3>
+<p>Controlador de la simulación. Contiene todos los equipos en un <code>ArrayList&lt;Equipo&gt;</code> genérico. <code>moveAll(dt)</code> delega el movimiento a cada equipo. <code>reportTagLocations()</code> y <code>reportTabletLocations()</code> iteran los equipos y detectan celulares cercanos para reportar a la nube.</p>
+
+<h3>ETNube</h3>
+<p>Servicio de nube (thread-safe con <code>synchronized</code>). Almacena la última posición conocida de cada dispositivo por propietario. <code>getOwnerRecords(owner)</code> devuelve todos los bienes de una persona para mostrar en FindMy.</p>
+
+<h3>TerritoryView</h3>
+<p>Extiende <code>ScrollPane</code>. Contiene un <code>StackPane</code> con la imagen de fondo y un <code>Pane</code> superpuesto donde se añaden las vistas de equipos. <code>WIDTH</code> y <code>HEIGHT</code> estáticos definen los límites del territorio para el rebote.</p>
+
+<h3>CellularView / EloTelTagView / TabletView</h3>
+<p>Vistas de cada dispositivo que extienden <code>Group</code>. Las propiedades de posición de las formas JavaFX se enlazan con <code>bind()</code> al modelo, por lo que se actualizan sin código adicional. <code>EloTelTagView</code> y <code>TabletView</code> añaden animación de radar y sonido en <code>showRadar()</code>. Todas incluyen menú contextual con "Find My".</p>
+
+<h3>FindMyWindow</h3>
+<p>Ventana flotante que muestra los bienes de una persona. Se auto-actualiza cada segundo mediante un <code>Timeline</code> interno. Se detiene limpiamente al cerrar la ventana.</p>
+
+<h3>SoundPlayer</h3>
+<p>Genera y reproduce un pitido corto (880 Hz, 120 ms) por síntesis PCM usando <code>javax.sound.sampled</code>. No requiere archivos externos.</p>
+
+<h2>4. Resumen por Etapas</h2>
+<table>
+  <tr><th>Etapa</th><th>Nuevas clases</th><th>Funcionalidad agregada</th></tr>
+  <tr>
+    <td><strong>1</strong></td>
+    <td><code>Stage1</code>, <code>Equipo</code>, <code>Cellular</code>, <code>CellularView</code>, <code>Territory</code>, <code>TerritoryView</code></td>
+    <td>Lee config, muestra mapa con celulares. Menú inactivo.</td>
+  </tr>
+  <tr>
+    <td><strong>2</strong></td>
+    <td><code>Stage2</code>, <code>EloTelTag</code>, <code>EloTelTagView</code>, <code>Tablet</code>, <code>TabletView</code></td>
+    <td>Todos los equipos visibles. Play/Pause activa la simulación.</td>
+  </tr>
+  <tr>
+    <td><strong>3</strong></td>
+    <td><code>Stage3</code>, <code>ETNube</code>, <code>FindMyWindow</code></td>
+    <td>Celulares reportan posición. Radar visual (sin sonido). Find My estático.</td>
+  </tr>
+  <tr>
+    <td><strong>4</strong></td>
+    <td><code>Stage4</code>, <code>SoundPlayer</code></td>
+    <td>Sonido en radar. Find My auto-actualizable (1 s). Javadoc.</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Generación de Javadoc:</strong><br>
+  Desde la carpeta <code>Etapa4/</code> ejecutar: <code>make doc</code><br>
+  La documentación HTML se genera en <code>Etapa4/doc/</code>. Abrir <code>doc/index.html</code>.
+</div>
+
+</body>
+</html>
