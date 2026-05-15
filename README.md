@@ -38,36 +38,73 @@ Cada etapa contiene:
 - `makefile` — instrucciones de compilación y ejecución
 
 ---
+# Requisitos
 
-## Requisitos
+- JDK 21 o compatible
+- JavaFX SDK 21 o compatible
+- GNU Make instalado (`make --version`)
 
-- **JDK 21** (o compatible)
-- **JavaFX SDK 21** (descargar en https://gluonhq.com/products/javafx/)
+---
 
-### Configurar ruta de JavaFX
+# Configuración JavaFX
 
-En cada `makefile`, actualizar la variable `JAVAFX_PATH` con la ruta local al SDK:
+Cada integrante debe modificar la variable `JAVAFX_PATH`
+en el `makefile` con la ruta local de su SDK JavaFX.
+
+Ejemplo Windows:
 
 ```makefile
-JAVAFX_PATH=C:\ruta\a\javafx-sdk-21\lib
-```
-
-En esta máquina (Android Studio JDK):
-```
-JAVAC = "C:\Program Files\Android\Android Studio\jbr\bin\javac"
-JAVA  = "C:\Program Files\Android\Android Studio\jbr\bin\java"
+JAVAFX_PATH = C:/Users/TU_USUARIO/Desktop/javafx-sdk-21/lib
 ```
 
 ---
 
-## Compilación y ejecución
+# Configuración JDK
 
-Desde la carpeta de cada etapa (requiere `make` en PATH):
+Actualizar las rutas de Java según la instalación local:
+
+```makefile
+JAVAC = "C:/Program Files/Java/jdk-21/bin/javac.exe"
+JAVA = "C:/Program Files/Java/jdk-21/bin/java.exe"
+JAVADOC = "C:/Program Files/Java/jdk-21/bin/javadoc.exe"
+```
+
+---
+
+# Compilación y ejecución
+
+Desde la carpeta de cada etapa:
+
+## Compilar
 
 ```bash
-make          # Compila todos los .java en src/
-make run      # Compila y ejecuta (abre FileChooser para cargar config.txt)
-make clean    # Elimina los .class generados
+make
+```
+
+## Ejecutar
+
+```bash
+make run
+```
+
+Al ejecutar se abrirá un FileChooser para seleccionar el archivo `config.txt`.
+
+## Generar documentación Javadoc
+
+```bash
+make doc
+```
+
+La documentación se generará en:
+
+```text
+doc/index.html
+```
+
+## Limpiar archivos compilados
+
+```bash
+make clean
 ```
 
 ### Etapa 1
